@@ -12,6 +12,7 @@
 
 typedef struct Envelope {
 	float frq;
+	float mag;
 	float dur;
 	float atk;
 	float dec;

@@ -13,6 +13,7 @@ typedef struct EnvelopeFileFormat {
 	char note;	// Upper or lower case note letters are both valid
 	char acc;	// 'N' for natural, 'S' for sharp, 'F' for flat, lower case also valid
 	int oct;	// Octave number
+	float mag;
 	float dur;
 	float atk;
 	float dec;
@@ -69,14 +70,13 @@ Track LoadTrack(const char* filename) {
 	while (fgets(buf, n, file)) {
 		line++;
 		EnvelopeFileFormat format = { 0 };
-		int count = sscanf(buf, "%c%c%d,%f,%f,%f,%f,%f",
-				&format.note, &format.acc,
-				&format.oct, &format.dur,
-				&format.atk, &format.dec,
-				&format.sus, &format.rel);
+		int count = sscanf(buf, "%c%c%d,%f,%f,%f,%f,%f,%f",
+				&format.note, &format.acc, &format.oct,
+				&format.mag, &format.dur, &format.atk,
+				&format.dec, &format.sus, &format.rel);
 
 		// Detect invalid format in track
-		if (count != 8) {
+		if (count != 9) {
 			fprintf(stderr, "ERROR: Track format not recognized\n");
 			fprintf(stderr, "\t\"%s\" line %d: %s\n", filename, line, buf);
 			UnloadTrack(&track);
@@ -112,8 +112,8 @@ Track LoadTrack(const char* filename) {
 		}
 
 		// Detect negative values
-		if (format.dur < 0 || format.atk < 0 || format.dec < 0 ||
-				format.sus < 0 || format.rel < 0) {
+		if (format.mag < 0 || format.dur < 0 || format.atk < 0 ||
+				format.dec < 0 || format.sus < 0 || format.rel < 0) {
 			fprintf(stderr, "ERROR: Negative floating point value\n");
 			fprintf(stderr, "\t\"%s\" line %d: %s\n", filename, line, buf);
 			UnloadTrack(&track);
@@ -170,6 +170,7 @@ Track LoadTrack(const char* filename) {
 				break;
 		}
 		env.frq = FREQ(noteIndex, octIndex, accIndex);
+		env.mag = format.mag;
 		env.dur = format.dur;
 		env.atk = format.atk;
 		env.dec = format.dec;
