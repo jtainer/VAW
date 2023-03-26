@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "vecimg.h"
 
-static VecImg CreateVecImg(unsigned int max) {
+VecImg CreateVecImg(unsigned int max) {
 	VecImg img = { 0 };
 	img.max = max;
 	img.vec = malloc(sizeof(Vec2) * max);
@@ -19,7 +19,7 @@ static VecImg CreateVecImg(unsigned int max) {
 	return img;
 }
 
-static void ImgInsertVec(VecImg* img, Vec2 vec) {
+void ImgInsertVec(VecImg* img, Vec2 vec) {
 	if (img->len >= img->max) {
 		Vec2* tmp = realloc(img->vec, sizeof(Vec2) * img->max * 2);
 		if (tmp == NULL) {
@@ -34,6 +34,7 @@ static void ImgInsertVec(VecImg* img, Vec2 vec) {
 		img->vec[img->len] = vec;
 		img->len++;
 	}
+	return;
 }
 
 VecImg LoadVecImg(const char* filename) {
@@ -68,9 +69,25 @@ VecImg LoadVecImg(const char* filename) {
 	return img;
 }
 
+void ExportVecImg(VecImg* img, const char* filename) {
+	FILE* file = fopen(filename, "w");
+	if (file == NULL) {
+		fprintf(stderr, "ERROR: Failed to open file for writing\n");
+		return;
+	}
+
+	for (unsigned int i = 0; i < img->len; i++) {
+		fprintf(file, "%f,%f\n", img->vec[i].x, img->vec[i].y);
+	}
+
+	fclose(file);
+	return;
+}
+
 void UnloadVecImg(VecImg* img) {
 	free(img->vec);
 	img->max = 0;
 	img->len = 0;
+	return;
 }
 

@@ -19,7 +19,10 @@ typedef struct VecImg {
 	unsigned int max;
 } VecImg;
 
+VecImg CreateVecImg(unsigned int max);
 VecImg LoadVecImg(const char* filename);
+void ImgInsertVec(VecImg* img, Vec2 vec);
+void ExportVecImg(VecImg* img, const char* filename);
 void UnloadVecImg(VecImg* img);
 
 #endif

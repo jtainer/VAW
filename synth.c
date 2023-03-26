@@ -63,6 +63,8 @@ Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 			Vec2 interp;
 			interp.x = beginFactor * begin.x + endFactor * end.x;
 			interp.y = beginFactor * begin.y + endFactor * end.y;
+			interp.x *= track->env[i].mag;
+			interp.y *= track->env[i].mag;
 			SignalAddSample(&signal, interp);
 		}
 		vecIndex += duration * stepSize;
