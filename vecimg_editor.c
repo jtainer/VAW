@@ -117,6 +117,10 @@ void VecEditDraw() {
 	}
 }
 
+VecImg* VecEditGetImage() {
+	return &editor.image;
+}
+
 void VecEditClose() {
 	UnloadVecImg(&editor.image);
 }

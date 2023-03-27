@@ -17,6 +17,8 @@ void VecEditUpdate();
 
 void VecEditDraw();
 
+VecImg* VecEditGetImage();
+
 void VecEditClose();
 
 #endif
