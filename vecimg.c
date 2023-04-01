@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "vecimg.h"
 
 VecImg CreateVecImg(unsigned int max) {
@@ -68,6 +69,14 @@ VecImg LoadVecImg(const char* filename) {
 	fclose(file);
 	return img;
 }
+
+VecImg CopyVecImg(VecImg* source) {
+	VecImg target = CreateVecImg(source->max);
+	target.len = source->len;
+	memcpy(target.vec, source->vec, sizeof(Vec2) * source->len);
+	return target;
+}
+
 
 void ExportVecImg(VecImg* img, const char* filename) {
 	FILE* file = fopen(filename, "w");
