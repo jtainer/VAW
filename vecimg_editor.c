@@ -21,9 +21,13 @@ typedef struct {
 	int selection;
 	Vector2 offset;
 	float size;
+	Color bgColor;
+	Color lineColor;
+	Color vertColor;
+	Color selectColor;
 } EDITOR;
 
-static EDITOR editor = { (VecImg) { 0 }, -1, (Vector2) { 0.f, 0.f }, 0.f };
+static EDITOR editor = { (VecImg) { 0 }, -1, (Vector2) { 0.f, 0.f }, 0.f, COLOR_BG, COLOR_LINE, COLOR_VERT, COLOR_SELECT };
 
 void VecEditInit(float x, float y, float size) {
 	editor.offset.x = x;
@@ -39,6 +43,13 @@ void VecEditSetPos(float x, float y) {
 
 void VecEditSetSize(float size) {
 	editor.size = size;
+}
+
+void VecEditSetColors(Color bg, Color line, Color vert, Color sel) {
+	editor.bgColor = bg;
+	editor.lineColor = line;
+	editor.vertColor = vert;
+	editor.selectColor = sel;
 }
 
 void VecEditUpdate() {
@@ -84,7 +95,7 @@ void VecEditUpdate() {
 void VecEditDraw() {
 
 	// Background
-	DrawRectangle(editor.offset.x, editor.offset.y, editor.size, editor.size, COLOR_BG);
+	DrawRectangle(editor.offset.x, editor.offset.y, editor.size, editor.size, editor.bgColor);
 
 	// Lines
 	Vector2* vec = (Vector2*) editor.image.vec;
@@ -101,7 +112,7 @@ void VecEditDraw() {
 		end = Vector2Scale(end, scale);
 		begin = Vector2Add(begin, offset);
 		end = Vector2Add(end, offset);
-		DrawLineV(begin, end, COLOR_LINE);
+		DrawLineV(begin, end, editor.lineColor);
 
 	}
 
@@ -112,13 +123,17 @@ void VecEditDraw() {
 		Vector2 vert = vec[i];
 		vert = Vector2Scale(vert, scale);
 		vert = Vector2Add(vert, offset);
-		Color color = (Vector2Distance(vert, mouse) < rad) ? COLOR_SELECT : COLOR_VERT;
+		Color color = (Vector2Distance(vert, mouse) < rad) ? editor.selectColor : editor.vertColor;
 		DrawCircleV(vert, rad, color);
 	}
 }
 
 VecImg* VecEditGetImage() {
 	return &editor.image;
+}
+
+void VecEditExport(const char* filename) {
+	ExportVecImg(&editor.image, filename);
 }
 
 void VecEditClose() {
