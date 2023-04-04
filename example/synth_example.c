@@ -20,17 +20,8 @@
 
 int main() {
 	Track track = LoadTrack("assets/track.csv");
-	printf("Loaded %u envelopes:\n", track.len);
-	for (unsigned int i = 0; i < track.len; i++) {
-		printf("%f\n", track.env[i].frq);
-	}
-	printf("\n");
 	
-	VecImg img = LoadVecImg("assets/image.csv");
-	printf("Loaded %u vectors:\n", img.len);
-	for (unsigned int i = 0; i < img.len; i++) {
-		printf("<%f, %f>\n", img.vec[i].x, img.vec[i].y);
-	}
+	VecImg img = LoadVecImg("logo1.csv");
 
 	Signal signal = LoadSignalVecImg(&img, &track, SAMPLE_RATE);
 	printf("Generated %u samples\n", signal.len);

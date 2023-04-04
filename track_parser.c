@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include "track.h"
 #include "freq.h"
+#include "parser_utils.h"
 
 typedef struct EnvelopeFileFormat {
 	char note;	// Upper or lower case note letters are both valid
@@ -69,6 +70,11 @@ Track LoadTrack(const char* filename) {
 	int line = 0;
 	while (fgets(buf, n, file)) {
 		line++;
+		
+		// Check if empty line or comment
+		if (StringIsWhitespace(buf)) continue;
+		if (StringStartsWith(buf, '%')) continue;
+		
 		EnvelopeFileFormat format = { 0 };
 		int count = sscanf(buf, "%c%c%d,%f,%f,%f,%f,%f,%f",
 				&format.note, &format.acc, &format.oct,
