@@ -37,12 +37,36 @@ void SignalAddSample(Signal* signal, Vec2 sample) {
 	}
 }
 
+static float GetEnvelopeAmplitude(float t, float atk, float dec, float sus, float prev) {
+	if (t < atk) {
+		float slope = (1.f - prev) / atk;
+		return prev + t * slope;
+	}
+	else if (t < atk + dec) {
+		float slope = (sus - 1.f) / dec;
+		return 1.f + (t - atk) * slope;
+	}
+	else {
+		return sus;
+	}
+}
+
 Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 	Signal signal = LoadSignalEmpty(sampleRate);
 	
 	unsigned int vecIndex = 0;
 	for (unsigned int i = 0; i < track->len; i++) {
 		unsigned int duration = track->env[i].dur * sampleRate;
+		
+		// ADSR parameters for current envelope
+		float atk = track->env[i].atk * sampleRate;
+		float dec = track->env[i].dec * sampleRate;
+		float sus = track->env[i].sus;
+		float rel = track->env[i].rel;
+		
+		// Final magnitude of previous envelope
+		float prev = (i > 0) ? track->env[i-1].sus : 0.f;
+
 		float stepSize = img->len * track->env[i].frq / sampleRate;
 		for (unsigned int t = 0; t < duration; t++) {
 			// No interpolation, just repeat samples
@@ -63,11 +87,16 @@ Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 			Vec2 interp;
 			interp.x = beginFactor * begin.x + endFactor * end.x;
 			interp.y = beginFactor * begin.y + endFactor * end.y;
-			interp.x *= track->env[i].mag;
-			interp.y *= track->env[i].mag;
+
+			// Apply ADSR
+			float amp = GetEnvelopeAmplitude(t * stepSize, atk, dec, sus, prev) * track->env[i].mag;
+			interp.x *= amp;
+			interp.y *= amp;
 			SignalAddSample(&signal, interp);
 		}
-		vecIndex += duration * stepSize;
+
+		// vecIndex += duration * stepSize;
+		vecIndex += track->env[i].dur * track->env[i].frq * img->len;
 		vecIndex %= img->len;
 	}
 
