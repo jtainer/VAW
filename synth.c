@@ -9,6 +9,13 @@
 #include <math.h>
 #include "synth.h"
 
+typedef struct {
+	int freqSmoothingEnabled;
+	float freqSmoothingRate;
+} SYNTH;
+
+static SYNTH synth = { 0, 1.0001f };
+
 Signal LoadSignalEmpty(unsigned int max) {
 	Signal signal = { 0 };
 	signal.max = max;
@@ -53,8 +60,15 @@ static float GetEnvelopeAmplitude(float t, float atk, float dec, float sus, floa
 
 Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 	Signal signal = LoadSignalEmpty(sampleRate);
-	
-	unsigned int vecIndex = 0;
+
+	// Track frequency between frames to smooth transitions
+	float currFreq = track->env[0].frq;
+	const float freqShiftRate = 1.001f;
+
+	// Track vector array index between envelopes
+	// Used float to accurately interpolate between vectors
+	float exactIndex = 0.f;
+
 	for (unsigned int i = 0; i < track->len; i++) {
 		unsigned int duration = track->env[i].dur * sampleRate;
 		
@@ -65,17 +79,32 @@ Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 		float rel = track->env[i].rel;
 		
 		// Final magnitude of previous envelope
-		float prev = (i > 0) ? track->env[i-1].sus : 0.f;
+		float prevMag = (i > 0) ? track->env[i-1].sus : 0.f;
 
-		float stepSize = img->len * track->env[i].frq / sampleRate;
+		float envelopeTime = 0.f;
 		for (unsigned int t = 0; t < duration; t++) {
+			// Smooth changes in frequency if enabled
+			float targetFreq = track->env[i].frq;
+			if (!synth.freqSmoothingEnabled) {
+				currFreq = targetFreq;
+			}
+			else if (currFreq < targetFreq) {
+				currFreq *= freqShiftRate;
+				currFreq = fmin(currFreq, targetFreq);
+			}
+			else if (currFreq > targetFreq) {
+				currFreq /= freqShiftRate;
+				currFreq = fmax(currFreq, targetFreq);
+			}
+
+			float stepSize = img->len * currFreq / sampleRate;
+	
 			// No interpolation, just repeat samples
 			// unsigned int tmpIndex = (t * stepSize) + vecIndex;
 			// tmpIndex %= img->len;
 			// SignalAddSample(&signal, img->vec[tmpIndex]);
 			
 			// Linear interpolation between vertices
-			float exactIndex = (t * stepSize) + (float) vecIndex;
 			unsigned int beginIndex = floorf(exactIndex);
 			unsigned int endIndex = ceilf(exactIndex);
 			beginIndex %= img->len;
@@ -89,15 +118,15 @@ Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 			interp.y = beginFactor * begin.y + endFactor * end.y;
 
 			// Apply ADSR
-			float amp = GetEnvelopeAmplitude(t * stepSize, atk, dec, sus, prev) * track->env[i].mag;
+			float amp = GetEnvelopeAmplitude(envelopeTime, atk, dec, sus, prevMag) * track->env[i].mag;
 			interp.x *= amp;
 			interp.y *= amp;
 			SignalAddSample(&signal, interp);
-		}
 
-		// vecIndex += duration * stepSize;
-		vecIndex += track->env[i].dur * track->env[i].frq * img->len;
-		vecIndex %= img->len;
+			exactIndex += stepSize;
+			envelopeTime += stepSize;
+		}
+		exactIndex = fmod(exactIndex, img->len);
 	}
 
 	return signal;
