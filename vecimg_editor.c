@@ -81,9 +81,14 @@ void VecEditUpdate() {
 	else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 		for (unsigned int i = 0; i < editor.image.len; i++) {
 			if (Vector2Distance(vec[i], mouse) < vertexRadius) {
-				editor.selection = i;
-				vec[i] = mouse;
-				break;
+				if (IsKeyDown(KEY_LEFT_SHIFT)) {
+					ImgDeleteVec(&editor.image, i);
+				}
+				else {
+					editor.selection = i;
+					vec[i] = mouse;
+					break;
+				}
 			}
 		}
 	}

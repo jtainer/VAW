@@ -21,6 +21,7 @@ typedef struct VecImg {
 
 VecImg CreateVecImg(unsigned int max);
 void ImgInsertVec(VecImg* img, Vec2 vec);
+void ImgDeleteVec(VecImg* img, unsigned int idx);
 VecImg LoadVecImg(const char* filename);
 VecImg CopyVecImg(VecImg* source);
 void ExportVecImg(VecImg* img, const char* filename);

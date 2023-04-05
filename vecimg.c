@@ -38,6 +38,15 @@ void ImgInsertVec(VecImg* img, Vec2 vec) {
 	return;
 }
 
+void ImgDeleteVec(VecImg* img, unsigned int idx) {
+	if (idx >= img->len) return;
+	for (int i = idx + 1; i < img->len; i++) {
+		img->vec[i-1] = img->vec[i];
+	}
+	img->len -= 1;
+	return;
+}
+
 VecImg LoadVecImg(const char* filename) {
 	FILE* file = fopen(filename, "r");
 	if (file == NULL) {
