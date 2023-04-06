@@ -19,9 +19,13 @@
 #define OUTPUT_FILE "output.wav"
 
 int main() {
-	Track track = LoadTrack("assets/track1.csv");
+	Track track = LoadTrack("assets/track3.csv");
 	
-	VecImg img = LoadVecImg("assets/triangle.csv");
+	for (int i = 0; i < 1; i++) {
+		printf("Envelope %d: dur=%f\tatk=%f\tdec=%f\tsus=%f\n", i, track.env[i].dur, track.env[i].atk, track.env[i].dec, track.env[i].sus);
+	}
+
+	VecImg img = LoadVecImg("assets/noise.csv");
 
 	Signal signal = LoadSignalVecImg(&img, &track, SAMPLE_RATE);
 	printf("Generated %u samples\n", signal.len);

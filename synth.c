@@ -115,10 +115,9 @@ Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 			interp.y = beginFactor * begin.y + endFactor * end.y;
 
 			// Apply ADSR
-			float t = envelopeTime * sampleRate;
 			float prev = (i > 0) ? track->env[i-1].sus * track->env[i-1].mag : 0.f;
 			float max = track->env[i].mag;
-			float amp = GetEnvelopeAmplitude(t, prev, max, atk, dec, sus);
+			float amp = GetEnvelopeAmplitude(envelopeTime, prev, max, atk, dec, sus);
 			interp.x *= amp;
 			interp.y *= amp;
 			SignalAddSample(&signal, interp);
