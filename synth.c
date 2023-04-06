@@ -14,7 +14,7 @@ typedef struct {
 	float freqSmoothingRate;
 } SYNTH;
 
-static SYNTH synth = { 0, 1.0001f };
+static SYNTH synth = { 1, 1.0004f };
 
 Signal LoadSignalEmpty(unsigned int max) {
 	Signal signal = { 0 };
@@ -44,14 +44,14 @@ void SignalAddSample(Signal* signal, Vec2 sample) {
 	}
 }
 
-static float GetEnvelopeAmplitude(float t, float atk, float dec, float sus, float prev) {
+static float GetEnvelopeAmplitude(float t, float prev, float max, float atk, float dec, float sus) {
 	if (t < atk) {
-		float slope = (1.f - prev) / atk;
+		float slope = (max - prev) / atk;
 		return prev + t * slope;
 	}
 	else if (t < atk + dec) {
-		float slope = (sus - 1.f) / dec;
-		return 1.f + (t - atk) * slope;
+		float slope = (sus - max) / dec;
+		return max + (t - atk) * slope;
 	}
 	else {
 		return sus;
@@ -63,7 +63,6 @@ Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 
 	// Track frequency between frames to smooth transitions
 	float currFreq = track->env[0].frq;
-	const float freqShiftRate = 1.001f;
 
 	// Track vector array index between envelopes
 	// Used float to accurately interpolate between vectors
@@ -78,9 +77,7 @@ Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 		float sus = track->env[i].sus;
 		float rel = track->env[i].rel;
 		
-		// Final magnitude of previous envelope
-		float prevMag = (i > 0) ? track->env[i-1].sus : 0.f;
-
+		// Track time within current envelope (count number of samples)
 		float envelopeTime = 0.f;
 		for (unsigned int t = 0; t < duration; t++) {
 			// Smooth changes in frequency if enabled
@@ -89,11 +86,11 @@ Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 				currFreq = targetFreq;
 			}
 			else if (currFreq < targetFreq) {
-				currFreq *= freqShiftRate;
+				currFreq *= synth.freqSmoothingRate;
 				currFreq = fmin(currFreq, targetFreq);
 			}
 			else if (currFreq > targetFreq) {
-				currFreq /= freqShiftRate;
+				currFreq /= synth.freqSmoothingRate;
 				currFreq = fmax(currFreq, targetFreq);
 			}
 
@@ -118,7 +115,10 @@ Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 			interp.y = beginFactor * begin.y + endFactor * end.y;
 
 			// Apply ADSR
-			float amp = GetEnvelopeAmplitude(envelopeTime, atk, dec, sus, prevMag) * track->env[i].mag;
+			float t = envelopeTime * sampleRate;
+			float prev = (i > 0) ? track->env[i-1].sus * track->env[i-1].mag : 0.f;
+			float max = track->env[i].mag;
+			float amp = GetEnvelopeAmplitude(t, prev, max, atk, dec, sus);
 			interp.x *= amp;
 			interp.y *= amp;
 			SignalAddSample(&signal, interp);

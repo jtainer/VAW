@@ -21,7 +21,7 @@
 int main() {
 	Track track = LoadTrack("assets/track1.csv");
 	
-	VecImg img = LoadVecImg("assets/logo1.csv");
+	VecImg img = LoadVecImg("assets/triangle.csv");
 
 	Signal signal = LoadSignalVecImg(&img, &track, SAMPLE_RATE);
 	printf("Generated %u samples\n", signal.len);
