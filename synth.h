@@ -16,6 +16,12 @@ typedef struct Signal {
 	unsigned int max;
 } Signal;
 
+// Synthesizer control functions
+void SynthEnableFreqInterp(float rate);
+void SynthDisableFreqInterp();
+void SynthSetPitchShift(float factor);
+
+// Signal manipulation functions
 Signal LoadSignalEmpty(unsigned int max);
 Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate);
 void SignalAddSample(Signal* signal, Vec2 sample);

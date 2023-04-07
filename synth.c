@@ -10,11 +10,27 @@
 #include "synth.h"
 
 typedef struct {
-	int freqSmoothingEnabled;
-	float freqSmoothingRate;
+	int freqInterpEnabled;
+	float freqInterpRate;
+
+	// TODO: implement pitch shifting, this isnt actually used yet
+	float pitchShiftFactor;
 } SYNTH;
 
-static SYNTH synth = { 1, 1.0004f };
+static SYNTH synth = { 1, 1.0004f, 1.f };
+
+void SynthEnableFreqInterp(float rate) {
+	synth.freqInterpEnabled = 1;
+	synth.freqInterpRate = rate;
+}
+
+void SynthDisableFreqInterp() {
+	synth.freqInterpEnabled = 0;
+}
+
+void SynthSetPitchShift(float factor) {
+	synth.pitchShiftFactor = factor;
+}
 
 Signal LoadSignalEmpty(unsigned int max) {
 	Signal signal = { 0 };
@@ -82,15 +98,15 @@ Signal LoadSignalVecImg(VecImg* img, Track* track, unsigned int sampleRate) {
 		for (unsigned int t = 0; t < duration; t++) {
 			// Smooth changes in frequency if enabled
 			float targetFreq = track->env[i].frq;
-			if (!synth.freqSmoothingEnabled) {
+			if (!synth.freqInterpEnabled) {
 				currFreq = targetFreq;
 			}
 			else if (currFreq < targetFreq) {
-				currFreq *= synth.freqSmoothingRate;
+				currFreq *= synth.freqInterpRate;
 				currFreq = fmin(currFreq, targetFreq);
 			}
 			else if (currFreq > targetFreq) {
-				currFreq /= synth.freqSmoothingRate;
+				currFreq /= synth.freqInterpRate;
 				currFreq = fmax(currFreq, targetFreq);
 			}
 
