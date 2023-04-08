@@ -67,10 +67,10 @@ static float GetEnvelopeAmplitude(float t, float prev, float max, float atk, flo
 	}
 	else if (t < atk + dec) {
 		float slope = (sus - max) / dec;
-		return max + (t - atk) * slope;
+		return fmin(max + (t - atk) * slope, max);
 	}
 	else {
-		return sus;
+		return fmin(sus, max);
 	}
 }
 
