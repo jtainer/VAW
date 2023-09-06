@@ -1,4 +1,4 @@
-VAW (Vector Audio Workstation) by Jonathan Tainer
+#VAW (Vector Audio Workstation) by Jonathan Tainer
 
 VAW is a work-in-progress software tool for creating vectorscope music.
 
