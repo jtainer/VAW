@@ -19,9 +19,9 @@
 #define OUTPUT_FILE "output.wav"
 
 int main() {
-	Track track = LoadTrack("assets/track3.csv");
+	Track track = LoadTrack("assets/track1.csv");
 	
-	VecImg img = LoadVecImg("assets/noise.csv");
+	VecImg img = LoadVecImg("assets/logo1.csv");
 
 	Signal signal = LoadSignalVecImg(&img, &track, SAMPLE_RATE);
 	printf("Generated %u samples\n", signal.len);
