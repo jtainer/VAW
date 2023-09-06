@@ -19,7 +19,7 @@
 #define OUTPUT_FILE "output.wav"
 
 int main() {
-	Track track = LoadTrack("assets/track1.csv");
+	Track track = LoadTrack("assets/track2.csv");
 	
 	VecImg img = LoadVecImg("assets/logo1.csv");
 
